@@ -83,10 +83,11 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ==================== MIDDLEWARE ====================
 
-# CORS - Allow all origins (configure for production)
+# CORS - Allow all origins in dev, specific in production
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to specific domains in production
+    allow_origins=allowed_origins if allowed_origins != ["*"] else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -257,10 +258,14 @@ if __name__ == "__main__":
     # Add parent directory to Python path
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     
+    # Get port from environment (for Railway/Render) or default to 8000
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    
     uvicorn.run(
         "backend.main:app",
-        host="127.0.0.1",
-        port=8000,
+        host=host,
+        port=port,
         reload=False,
         log_level="info"
     )

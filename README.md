@@ -75,6 +75,10 @@ cd C:\path\to\Gophora-v2\GOPHORA-v2
 
 Complete FastAPI backend + React frontend with automated job scraping, AI-powered matching, and intelligent chatbot.
 
+**🚀 [See DEPLOYMENT.md for free hosting guide](./DEPLOYMENT.md)**
+
+---
+
 ## 🚀 Quick Local Run (share this with friends)
 
 1) **Clone**
@@ -85,9 +89,10 @@ cd Gophora-v2/GOPHORA-v2
 
 2) **Env & creds** (root folder)
 ```bash
-copy .env.example .env              # on Windows (or: cp .env.example .env)
-# edit .env and set at least: JWT_SECRET, GEMINI_API_KEY, VITE_API_URL, FIREBASE_*.
-# place your Firebase service account JSON as serviceAccount.json in the root.
+# Get .env file from project owner (contains all required API keys)
+# Place .env in the root folder
+# Get serviceAccount.json from project owner
+# Place serviceAccount.json in the root folder
 ```
 
 3) **Backend**
@@ -109,6 +114,26 @@ npm run dev
 - Backend API/docs: http://127.0.0.1:8000 (Swagger at /docs)
 
 > Do **not** commit `.env` or `serviceAccount.json`. `VITE_API_URL` must point to your running backend.
+
+---
+
+## 🌐 Deploy to Production (FREE)
+
+Full deployment guide with CI/CD: **[DEPLOYMENT.md](./DEPLOYMENT.md)**
+
+Quick summary:
+- **Frontend**: GitHub Pages (auto-deploy from GitHub Actions)
+- **Backend**: Railway (auto-deploy from GitHub)
+- **Database**: Firebase/Firestore (free tier)
+- **CI/CD**: GitHub Actions (automatic on push to main)
+
+**Total cost: $0/month**
+
+**Live URLs after deployment:**
+- Frontend: `https://YOUR-USERNAME.github.io/GOPHORA-v2/`
+- Backend: `https://your-app.up.railway.app`
+
+---
 - Start command: `python -m backend.main`
 - Env vars: `JWT_SECRET`, `JWT_ALGORITHM=HS256`, `GEMINI_API_KEY`, `GEMINI_CHAT_MODEL`, `OPENAI_API_KEY` (optional), **one of** `FIREBASE_CREDENTIALS_PATH` or `FIREBASE_CREDENTIALS_JSON`/`FIREBASE_CREDENTIALS_BASE64`.
 - Easiest: set `FIREBASE_CREDENTIALS_BASE64` to base64 of your service account JSON; the app writes `serviceAccount.runtime.json` at runtime.
