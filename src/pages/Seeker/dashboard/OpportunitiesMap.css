@@ -1,0 +1,26 @@
+/* Custom Leaflet Popup Styling */
+.leaflet-popup-content-wrapper {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  min-width: 250px !important;
+}
+
+.leaflet-popup-tip {
+  background: #0E0B16 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.custom-popup .leaflet-popup-close-button {
+  color: #fff !important;
+  font-size: 20px !important;
+  padding: 4px 8px !important;
+}
+
+.custom-popup .leaflet-popup-close-button:hover {
+  color: #A239CA !important;
+}
