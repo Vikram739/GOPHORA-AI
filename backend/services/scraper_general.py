@@ -22,6 +22,7 @@ from fake_useragent import UserAgent
 
 from backend.database.firestore_client import firestore_client
 from backend.services.ai_validator import ai_validator
+from backend.services.scraper_api import api_scraper
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -280,11 +281,21 @@ class GeneralJobScraper:
         try:
             all_jobs = []
             
-            # Get opportunities from various sources
+            # ===== REAL API SOURCES FIRST (Work 24/7 everywhere) =====
+            logger.info("Scraping REAL jobs from API sources...")
+            api_jobs = await api_scraper.scrape_remoteok(keywords="", limit=150)
+            all_jobs.extend(api_jobs)
+            logger.info(f"Got {len(api_jobs)} REAL remote jobs from RemoteOK")
+            
+            arbeitnow_jobs = await api_scraper.scrape_arbeitnow(keywords="", limit=100)
+            all_jobs.extend(arbeitnow_jobs)
+            logger.info(f"Got {len(arbeitnow_jobs)} REAL tech jobs from Arbeitnow")
+            
+            # ===== Try Selenium sources (work locally, fallback on cloud) =====
             logger.info("Starting Upwork scraping...")
-            upwork_jobs = await self.scrape_upwork_gigs(limit=15)
+            upwork_jobs = await self.scrape_upwork_gigs(limit=50)
             all_jobs.extend(upwork_jobs)
-            self._random_delay(3, 5)
+            self._random_delay(2, 4)
             
             logger.info("Adding MTurk opportunities...")
             mturk_jobs = await self.scrape_mturk_hits(limit=10)
@@ -294,7 +305,9 @@ class GeneralJobScraper:
             survey_jobs = await self.scrape_survey_sites()
             all_jobs.extend(survey_jobs)
             
-            # Store jobs in Firestore with AI validation
+            logger.info(f"Total general jobs collected: {len(all_jobs)}")
+            
+            # Store jobs in Firestore WITHOUT AI validation for speed
             new_jobs_count = 0
             
             for job in all_jobs:
@@ -308,17 +321,9 @@ class GeneralJobScraper:
                     logger.debug(f"Skipping duplicate job: {job['jobTitle']}")
                     continue
                 
-                # Categorize with AI if category not set or is generic
-                if not job.get('category') or job.get('category') == 'Other':
-                    try:
-                        category = await ai_validator.categorize_job(
-                            job['jobTitle'],
-                            job.get('description', '')
-                        )
-                        job['category'] = category
-                    except Exception as e:
-                        logger.warning(f"AI categorization failed: {e}")
-                        job['category'] = 'Gig Work'
+                # Simple categorization without AI
+                if not job.get('category'):
+                    job['category'] = 'General'
                 
                 # Ensure all required fields
                 job.setdefault('company', job.get('source', 'Unknown'))

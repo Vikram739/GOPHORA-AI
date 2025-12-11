@@ -25,6 +25,7 @@ from fake_useragent import UserAgent
 # Internal imports
 from backend.database.firestore_client import firestore_client
 from backend.services.ai_validator import ai_validator
+from backend.services.scraper_api import api_scraper
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -437,29 +438,38 @@ class PersonalizedJobScraper:
             keywords = ', '.join(skills[:3]) if skills else ', '.join(interests[:3])
             location = user_data.get('location', '')
             
-            # Scrape from multiple sources with MASSIVE LIMITS for 800+ jobs
+            # Scrape from multiple sources - REAL JOBS FIRST, then fallback
             all_jobs = []
             
-            # Indeed - high priority (200 jobs)
+            # ===== REAL API SOURCES (Work 24/7 on cloud, no Selenium) =====
+            logger.info(f"Scraping REAL jobs from API sources for user {user_id}...")
+            api_jobs = await api_scraper.scrape_all_sources(keywords, location, limit_per_source=150)
+            all_jobs.extend(api_jobs)
+            logger.info(f"Got {len(api_jobs)} REAL jobs from API sources")
+            
+            # ===== TRY Selenium sources (work locally, might fail on cloud) =====
+            # Indeed - with fallback (200 jobs)
             indeed_jobs = await self.scrape_indeed(keywords, location, limit=200)
             all_jobs.extend(indeed_jobs)
             self._random_delay(1, 2)
             
-            # LinkedIn (200 jobs)
+            # LinkedIn - with fallback (200 jobs)
             linkedin_jobs = await self.scrape_linkedin(keywords, location, limit=200)
             all_jobs.extend(linkedin_jobs)
             self._random_delay(1, 2)
             
-            # Glassdoor (200 jobs)
+            # Glassdoor - with fallback (200 jobs)
             glassdoor_jobs = await self.scrape_glassdoor(keywords, location, limit=200)
             all_jobs.extend(glassdoor_jobs)
             self._random_delay(1, 2)
             
-            # Handshake (for entry-level/students) (200 jobs)
+            # Handshake (for entry-level/students) - with fallback (200 jobs)
             if experience in ['Entry Level', 'Student', 'Intern', '']:
                 handshake_jobs = await self.scrape_handshake(keywords, location, limit=200)
                 all_jobs.extend(handshake_jobs)
-                self._random_delay(2, 4)
+                self._random_delay(1, 2)
+            
+            logger.info(f"Total jobs collected for user {user_id}: {len(all_jobs)}")
             
             # Validate and store jobs
             new_jobs_count = 0
