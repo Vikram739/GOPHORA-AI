@@ -205,17 +205,18 @@ async def trigger_personalized_scraper():
     Manually trigger personalized job scraper
     
     - Admin only (add authentication in production)
-    - Runs scraper for all users
+    - Runs scraper for all users IN BACKGROUND
     """
     try:
         from backend.services.scraper_personalized import personalized_scraper
         
-        # Run scraper in background
+        # Run scraper in background - doesn't block response
         import asyncio
         asyncio.create_task(personalized_scraper.scrape_jobs_for_all_users())
         
         return {
-            "message": "Personalized scraper started in background"
+            "message": "✅ Personalized scraper started in background (check logs for progress)",
+            "note": "Jobs will be added in 30-60 seconds. Refresh dashboard to see results."
         }
         
     except Exception as e:
@@ -231,6 +232,7 @@ async def trigger_general_scraper():
     Manually trigger general job scraper
     
     - Admin only (add authentication in production)
+    - Runs IN BACKGROUND
     """
     try:
         from backend.services.scraper_general import general_scraper
@@ -240,7 +242,8 @@ async def trigger_general_scraper():
         asyncio.create_task(general_scraper.scrape_all_general_jobs())
         
         return {
-            "message": "General scraper started in background"
+            "message": "✅ General scraper started in background (check logs for progress)",
+            "note": "Jobs will be added in 20-40 seconds. Refresh dashboard to see results."
         }
         
     except Exception as e:

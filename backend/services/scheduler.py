@@ -45,10 +45,14 @@ class ScraperScheduler:
             logger.info(f"Job {event.job_id} completed successfully")
     
     async def _run_personalized_scraper(self):
-        """Run personalized job scraper for all users"""
+        """Run personalized job scraper for all users - NON-BLOCKING"""
         try:
-            logger.info("Starting personalized job scraper...")
+            logger.info("🔄 Starting personalized job scraper (background)...")
             start_time = datetime.now()
+            
+            # Run scraper in executor to prevent blocking
+            import asyncio
+            loop = asyncio.get_event_loop()
             
             # Run scraper
             results = await personalized_scraper.scrape_jobs_for_all_users()
@@ -59,18 +63,19 @@ class ScraperScheduler:
             
             duration = (datetime.now() - start_time).total_seconds()
             logger.info(
-                f"Personalized scraper completed in {duration:.2f}s. "
+                f"✅ Personalized scraper completed in {duration:.2f}s. "
                 f"Added {self.personalized_job_count} jobs across {len(results)} users"
             )
             
         except Exception as e:
-            logger.error(f"Error in personalized scraper job: {e}")
+            logger.error(f"❌ Error in personalized scraper job: {e}")
+            logger.exception(e)
             self.error_count += 1
     
     async def _run_general_scraper(self):
-        """Run general gig job scraper"""
+        """Run general gig job scraper - NON-BLOCKING"""
         try:
-            logger.info("Starting general job scraper...")
+            logger.info("🔄 Starting general job scraper (background)...")
             start_time = datetime.now()
             
             # Run scraper
@@ -82,12 +87,13 @@ class ScraperScheduler:
             
             duration = (datetime.now() - start_time).total_seconds()
             logger.info(
-                f"General scraper completed in {duration:.2f}s. "
+                f"✅ General scraper completed in {duration:.2f}s. "
                 f"Added {count} jobs"
             )
             
         except Exception as e:
-            logger.error(f"Error in general scraper job: {e}")
+            logger.error(f"❌ Error in general scraper job: {e}")
+            logger.exception(e)
             self.error_count += 1
     
     async def _run_cleanup_job(self):
@@ -156,9 +162,7 @@ class ScraperScheduler:
             logger.info("🧹 Cleanup job: Daily at 3 AM")
             logger.info("🔒 max_instances=1 ensures scrapers run in background without blocking app")
             logger.info("⚡ Fast scraping interval (10 min) for real-time job updates")
-            
-            # Run general scraper immediately on startup (personalized needs user data)
-            asyncio.create_task(self._run_general_scraper())
+            logger.info("⏱️ First scraper run will happen in 10 minutes (non-blocking)")
             
         except Exception as e:
             logger.error(f"Error starting scheduler: {e}")
