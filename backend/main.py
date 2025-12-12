@@ -28,7 +28,7 @@ from slowapi.errors import RateLimitExceeded
 from dotenv import load_dotenv
 
 # Import routers
-from backend.routers import auth, jobs, chat, user, opportunities, resumes
+from backend.routers import auth, jobs, chat, user, opportunities, resumes, seed
 
 # Import services
 from backend.services.scheduler import scraper_scheduler
@@ -111,8 +111,9 @@ app.include_router(auth.router)
 app.include_router(jobs.router)
 app.include_router(chat.router)
 app.include_router(user.router)
-app.include_router(opportunities.router)  # Frontend-compatible opportunities endpoints
-app.include_router(resumes.router)  # Resume management endpoints
+app.include_router(opportunities.router)
+app.include_router(resumes.router)
+app.include_router(seed.router)  # DEBUG SEED ENDPOINTS
 
 # ==================== HEALTH CHECK ENDPOINTS ====================
 
